@@ -386,11 +386,22 @@ class MobileScanner(
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
             val numberOfCameras = cameraProvider?.availableCameraInfos?.size
+            val availableCameras = cameraProvider?.availableCameraInfos
+            val firstCamera = availableCameras?.firstOrNull()
 
             if (cameraProvider == null) {
                 mobileScannerErrorCallback(CameraError())
 
                 return@addListener
+            }
+
+            if (firstCamera != null) {
+                Log.d("CameraDebug", "Forcing use of first available camera: $firstCamera")
+                cameraSelector = CameraSelector.Builder()
+                    .addCameraFilter { listOf(firstCamera) }  // Force using this camera
+                    .build()
+            } else {
+                Log.e("CameraDebug", "No available cameras found!")
             }
 
             cameraProvider?.unbindAll()
