@@ -251,6 +251,8 @@ class MobileScanner(
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
             val numberOfCameras = cameraProvider?.availableCameraInfos?.size
+            val availableCameras = cameraProvider?.availableCameraInfos
+            val firstCamera = availableCameras.firstOrNull()
 
             if (cameraProvider == null) {
                 mobileScannerErrorCallback(CameraError())
@@ -260,6 +262,15 @@ class MobileScanner(
 
             cameraProvider?.unbindAll()
             textureEntry = textureRegistry.createSurfaceTexture()
+
+            if (firstCamera != null) {
+                Log.d("CameraDebug", "Forcing use of first available camera: $firstCamera")
+                cameraPosition = CameraSelector.Builder()
+                    .addCameraFilter { listOf(firstCamera) }  // Force using this camera
+                    .build()
+            } else {
+                Log.e("CameraDebug", "No available cameras found!")
+            }
 
             // Preview
             val surfaceProvider = Preview.SurfaceProvider { request ->
