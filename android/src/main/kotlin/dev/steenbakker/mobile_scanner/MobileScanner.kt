@@ -341,10 +341,6 @@ class MobileScanner(
                 return@addListener
             }
 
-            // Get the camera ID for debugging
-            val cameraId = Camera2CameraInfo.from(firstCameraInfo).cameraId
-            Log.d("MobileScanner", "Using first available camera with ID: $cameraId")
-
             // Create a CameraSelector without requiring lens facing
             val firstCameraSelector = CameraSelector.Builder().build()
 
