@@ -332,16 +332,33 @@ class MobileScanner(
 
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
+            val firstCameraInfo = cameraProvider?.availableCameraInfos?.firstOrNull()
+
+            if (firstCameraInfo == null) {
+                Log.e("MobileScanner", "No available cameras found")
+                mobileScannerErrorCallback(NoCamera())
+                return@addListener
+            }
+
+            // Get the camera ID for debugging
+            val cameraId = Camera2CameraInfo.from(firstCameraInfo).cameraId
+            Log.d("MobileScanner", "Using first available camera with ID: $cameraId")
+
+            // Create a CameraSelector without requiring lens facing
+            val firstCameraSelector = CameraSelector.Builder().build()
+
             try {
                 camera = cameraProvider?.bindToLifecycle(
                     activity as LifecycleOwner,
-                    cameraPosition,
+                    firstCameraSelector,
                     preview,
                     analysis
                 )
-            } catch(exception: Exception) {
-                mobileScannerErrorCallback(NoCamera())
 
+                Log.d("MobileScanner", "Camera successfully bound to lifecycle")
+            } catch (exception: Exception) {
+                Log.e("MobileScanner", "Failed to bind camera: ${exception.message}", exception)
+                mobileScannerErrorCallback(NoCamera())
                 return@addListener
             }
 
